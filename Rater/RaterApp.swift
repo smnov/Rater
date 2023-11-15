@@ -11,7 +11,7 @@ import SwiftUI
 struct RaterApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RaterMainView()
         }
     }
 }
