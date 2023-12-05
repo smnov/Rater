@@ -34,8 +34,9 @@ func (s *APIServer) UploadFileHandler(w http.ResponseWriter, r *http.Request) er
 		if err != nil {
 		return err
 	}
-
-	dst, err := os.Create(fmt.Sprintf("%s%s/%d%s", fileFolder, accountName, time.Now().UnixNano(), filepath.Ext(handler.Filename)))
+	fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Ext(handler.Filename))
+	fileUrl := fmt.Sprintf("%s%s/%s", fileFolder, accountName, fileName)
+	dst, err := os.Create(fileUrl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
@@ -50,7 +51,7 @@ func (s *APIServer) UploadFileHandler(w http.ResponseWriter, r *http.Request) er
 	}
 
 	accountID := getUserIDFromToken(r)
-	fileToDB := NewFile(handler.Filename, handler.Size, accountID)
+	fileToDB := NewFile(handler.Filename, fileName, handler.Size, accountID)
 	if err = s.store.AddFileToDB(accountID, fileToDB); err != nil {
 		return err
 	}
@@ -115,7 +116,6 @@ func (s *APIServer) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	resp := LoginResponse{
-		Name: acc.Name,
 		Token: token,
 	}
 
@@ -123,32 +123,100 @@ func (s *APIServer) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *APIServer) GetAccountByNameHandler(w http.ResponseWriter, r *http.Request) error {
-	name := GetNameFromRequest(r)
 	usernameFromToken := getUsernameFromToken(r)
-
-	err := compareReqNameAndToken(name, usernameFromToken)
-	if err != nil {
-		return err
-	}
 	
-	account, err := s.store.GetAccountByName(name)
+	account, err := s.store.GetAccountByName(usernameFromToken)
 	if err != nil {
 		return err
 	}
-	files, err := s.store.GetFilesOfAccount(account.ID)
+	return JSONSerializer(w, http.StatusOK, account)
+}
+
+func (s * APIServer) GetFileHandler(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == "GET" {
+	file_id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
 		return err
 	}
+	file, err := s.store.GetFileById(file_id)
+	return JSONSerializer(w, http.StatusOK, file)
+
+	} else if r.Method == "DELETE" {
+		file_id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+		if err != nil {
+			return err
+	}
+		err = s.store.DeleteFileById(file_id)
+		if err != nil {
+			return err
+		}
+		print("Deleted")
+		return JSONSerializer(w, http.StatusOK)
+	}
+	return nil
+}
+
+func (s *APIServer) GetRandomFileHandler(w http.ResponseWriter, r *http.Request) error {
+	accountId := getUserIDFromToken(r)
+	randomFile, err := s.store.GetRandomFile(accountId) 
 	if err != nil {
 		return err
 	}
-	return JSONSerializer(w, http.StatusOK, account, files)
+	return JSONSerializer(w, http.StatusOK, randomFile)
+}
+
+func (s *APIServer) RateFileHandler(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		http.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
+	}
+	accountId := getUserIDFromToken(r)
+	fileId, err := strconv.ParseInt(mux.Vars(r)["file_id"], 10, 64)
+	if err != nil {
+		return err
+	}
+	req := new(RateRequest)
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			return err
+		}
+	req.AccountId = accountId
+	req.FileId = fileId
+	err = s.store.RateFile(req)
+	if err != nil {
+		return err
+	}
+	return JSONSerializer(w, http.StatusOK)
+}
+
+func (s *APIServer) GetImageByURL(w http.ResponseWriter, r *http.Request) error {
+	fileName := mux.Vars(r)["filename"]
+	fmt.Println(fileName)
+	accountName := getUsernameFromToken(r)
+	filePath := fileFolder + accountName + "/" + fileName
+	fmt.Println(filePath)
+
+	imageFile, err := http.Dir(".").Open(filePath)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fileInfo, err := imageFile.Stat()
+	fmt.Println(fileInfo)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer imageFile.Close()
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	http.ServeContent(w, r, filePath, fileInfo.ModTime(), imageFile)
+	return nil
+
 }
 
 func ChangeRatingHandler(w http.ResponseWriter, r *http.Request) error {
 	return fmt.Errorf("error")
 }
-
 
 func GetNameFromRequest(r *http.Request) string {
 	StringID := mux.Vars(r)["name"]

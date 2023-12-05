@@ -16,8 +16,11 @@ type Storage interface {
 	GetAccountByName(name string) (*Account, error)
 	GetAccountByID(id int64) (*Account, error)
 	GetFiles() ([]*File, error)
-	// GetFileOfAccount(int64) (*File, error)
+	GetFileById(file_id int64) (*File, error)
+	DeleteFileById(file_id int64) error
 	GetFilesOfAccount(id int64) ([]*File, error)
+	GetRandomFile(account_id int64) (*File, error)
+	RateFile(req *RateRequest) error
 	AddFileToDB(int64, *File) error
 }
 
@@ -63,8 +66,8 @@ func (s *PostgresStore) CreateAccountFileTable() error {
 func (s *PostgresStore) CreateAccountTable() error {
 	query := `CREATE TABLE IF NOT EXISTS account (
 		id serial primary key,
-		name varchar(100),
-		email varchar(100),
+		name varchar(100) unique,
+		email varchar(100) unique,
 		encrypted_password varchar(150),
 		created_at timestamp
 	)`
@@ -177,7 +180,7 @@ func (s *PostgresStore) GetFilesOfAccount(id int64) ([]*File, error) {
 	return files, nil
 }
 
-func (s *PostgresStore) GetFileOfById(id int64) (*File, error) {
+func (s *PostgresStore) GetFileById(id int64) (*File, error) {
 	rows, err := s.db.Query(`SELECT * FROM file WHERE id = $1`, id)
 	if err != nil {
 		return nil, err
@@ -188,23 +191,42 @@ func (s *PostgresStore) GetFileOfById(id int64) (*File, error) {
 	return nil, err
 }
 
-func (s *PostgresStore) DeleteFile(id int64) error {
-	_, err := s.db.Query(`DELETE * FROM file WHERE id = $1`, id)
+func (s *PostgresStore) DeleteFileById(id int64) error {
+	_, err := s.db.Query(`DELETE FROM file WHERE id = $1`, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *PostgresStore) RateFile(account_id, file_id int64, rate_type string, ratenumber float64) error {
+func (s *PostgresStore) GetRandomFile(account_id int64) (*File, error) {
+	rows, err := s.db.Query(`SELECT * from file
+				WHERE id NOT IN (
+					SELECT file_id
+					FROM account_file
+					WHERE account_id = $1
+				)`, account_id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		return ScanIntoFile(rows)
+	}
+	return nil, err
+}
+
+func (s *PostgresStore) RateFile(req *RateRequest) error {
 	query := (`UPDATE account_file
-	SET $1 = $4
-	WHERE account_id = $2 AND file_id = $3;`)
+	SET attractiveness_rating = $1,
+		smart_rating = $2,
+		trustworthy_rating = $3
+	WHERE account_id = $4 AND file_id = $5;`)
 	_, err := s.db.Query(query, 
-	rate_type,
-	account_id,
-	file_id,
-	ratenumber,
+	req.AttractivenessRating,
+	req.SmartRating,
+	req.TrustworthyRating,
+	req.AccountId,
+	req.FileId,
 	)
 	if err != nil {
 		return fmt.Errorf("%s",err)

@@ -17,15 +17,19 @@ type File struct {
 	AccountID		int64			`json:"account_id"`
 }
 
+// type RateFile struct {
+
+// }
+
 func createFileUrl(fileName string) string {
 	return fileFolder + fileName
 }
 
 
-func NewFile(name string, size, accountID int64) *File {
+func NewFile(name, url string, size, accountID int64) *File {
 	return &File{
 		Name: name,
-		Url: createFileUrl(name),
+		Url: url,
 		Size: size,
 		// Tags: pq.StringArray,
 		CreatedAt: time.Now().UTC(),
@@ -38,7 +42,6 @@ type Account struct {
 	Name 				string 		`json:"name"`
 	Email				string		`json:"email"`
 	EncryptedPassword 	string 		`json:"-"`
-	Files 				[]*File 	`json:"files"`
 	CreatedAt 			time.Time 	`json:"created_at"`
 }
 
@@ -82,6 +85,13 @@ type LoginAccountRequest struct {
 }
 
 type LoginResponse struct {
-	Name string `json:"name"`
 	Token string `json:"token"`
+}
+
+type RateRequest struct {
+	AccountId 				int64 		`json:"accound_id"`
+	FileId 					int64 		`json:"file_id"`
+	AttractivenessRating 	float64 	`json:"attractiveness_rating"`
+	SmartRating 			float64		`json:"smart_rating"`
+	TrustworthyRating 		float64 	`json:"trustworthy_rating"`
 }

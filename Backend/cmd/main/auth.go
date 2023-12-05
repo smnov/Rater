@@ -22,7 +22,6 @@ func createJWT(account *Account) (string, error) {
 	return token.SignedString([]byte(secret_key))
 }
 
-
 func validateJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
