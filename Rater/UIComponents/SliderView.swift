@@ -7,19 +7,22 @@
 
 import SwiftUI
 
-struct Slider: View {
+struct SliderView: View {
+    
+    @Binding var rating: Float
+    var text: String
+    @State var isEditing: Bool = false
+    
     var body: some View {
+        Text("\(text): \(rating, specifier: "%.2f")")
         Slider (
-            value: $viewmodel.rating,
-            in: 0...10,
+            value: $rating,
+            in: 1...10,
             step: 1,
             onEditingChanged: { editing in
-                viewmodel.isEditing = editing
+                isEditing = editing
             }
         )
+        .tint(Color(.purple))
     }
-}
-
-#Preview {
-    Slider()
 }

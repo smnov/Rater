@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct RaterApp: App {
+    
+    @StateObject var appWideState = AppWideState()
+    
     var body: some Scene {
         WindowGroup {
             RaterMainView()
+                .environmentObject(appWideState)
         }
     }
 }

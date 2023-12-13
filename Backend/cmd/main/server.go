@@ -39,6 +39,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/files", makeHTTPHandleFunc(s.GetFilesHandler))
 	router.HandleFunc("/files/random", withJWTAuth(makeHTTPHandleFunc(s.GetRandomFileHandler), s.store))
 	router.HandleFunc("/files/{file_id}/rate", withJWTAuth(makeHTTPHandleFunc(s.RateFileHandler), s.store))
+	router.HandleFunc("/files/rated", withJWTAuth(makeHTTPHandleFunc(s.RatedFilesHandler), s.store))
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.CreateAccountHandler))
 	router.HandleFunc("/account/profile", withJWTAuth(makeHTTPHandleFunc(s.GetAccountByNameHandler), s.store))
 	router.HandleFunc("/account/profile/files", withJWTAuth(makeHTTPHandleFunc(s.GetFilesOfAccountHandler), s.store))

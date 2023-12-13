@@ -17,9 +17,10 @@ type File struct {
 	AccountID		int64			`json:"account_id"`
 }
 
-// type RateFile struct {
+type FileName struct {
+	Name 	string `json:"name"`
+}
 
-// }
 
 func createFileUrl(fileName string) string {
 	return fileFolder + fileName

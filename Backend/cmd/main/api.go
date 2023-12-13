@@ -6,8 +6,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -35,7 +37,7 @@ func (s *APIServer) UploadFileHandler(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 	fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Ext(handler.Filename))
-	fileUrl := fmt.Sprintf("%s%s/%s", fileFolder, accountName, fileName)
+	fileUrl := fmt.Sprintf("%s/%s/%s", fileFolder, accountName, fileName)
 	dst, err := os.Create(fileUrl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -134,23 +136,28 @@ func (s *APIServer) GetAccountByNameHandler(w http.ResponseWriter, r *http.Reque
 
 func (s * APIServer) GetFileHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-	file_id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
-	if err != nil {
-		return err
-	}
-	file, err := s.store.GetFileById(file_id)
-	return JSONSerializer(w, http.StatusOK, file)
-
-	} else if r.Method == "DELETE" {
 		file_id, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 		if err != nil {
 			return err
-	}
-		err = s.store.DeleteFileById(file_id)
+		}
+		file, err := s.store.GetFileById(file_id)
+		return JSONSerializer(w, http.StatusOK, file)
+
+	} else if r.Method == "DELETE" {
+		fileId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+		accountName := getUsernameFromToken(r)
+		file, err := s.store.GetFileById(fileId)
 		if err != nil {
 			return err
 		}
-		print("Deleted")
+		filePath := path.Join(fileFolder, accountName, file.Name)
+		os.Remove(filePath)
+
+		err = s.store.DeleteFileById(fileId)
+		if err != nil {
+			return err
+		}
+		fmt.Println("File was successfully deleted", file)
 		return JSONSerializer(w, http.StatusOK)
 	}
 	return nil
@@ -180,6 +187,7 @@ func (s *APIServer) RateFileHandler(w http.ResponseWriter, r *http.Request) erro
 		}
 	req.AccountId = accountId
 	req.FileId = fileId
+	fmt.Println(req)
 	err = s.store.RateFile(req)
 	if err != nil {
 		return err
@@ -187,14 +195,30 @@ func (s *APIServer) RateFileHandler(w http.ResponseWriter, r *http.Request) erro
 	return JSONSerializer(w, http.StatusOK)
 }
 
+func (s *APIServer) RatedFilesHandler(w http.ResponseWriter, r *http.Request) error {
+	// accountId := getUserIDFromToken(r)
+
+	files, err := s.store.GetRatedFiles()
+	if err != nil {
+		return err
+	}
+	return JSONSerializer(w, http.StatusOK, files)
+}
+
 func (s *APIServer) GetImageByURL(w http.ResponseWriter, r *http.Request) error {
 	fileName := mux.Vars(r)["filename"]
-	fmt.Println(fileName)
 	accountName := getUsernameFromToken(r)
-	filePath := fileFolder + accountName + "/" + fileName
-	fmt.Println(filePath)
+	filePath := path.Join(fileFolder, accountName, fileName)
+	filePath = strings.TrimRight(filePath, "\n") // For some reason filePath adds "\n" in the end. Here we remove it.
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		fmt.Println("uploads no exist")
+	}
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {		
+		fmt.Println("File does not exist:", filePath)
+		return err
+	}
 
-	imageFile, err := http.Dir(".").Open(filePath)
+	imageFile, err := http.Dir("").Open(filePath)
 	if err != nil {
 		fmt.Println(err)
 		return err

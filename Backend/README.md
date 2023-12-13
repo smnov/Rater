@@ -14,3 +14,5 @@ docker run --name rater_db -e POSTGRES_PASSWORD=rater_password -p 5432:5432 -d p
 delete file
 
 refactor 
+FILES RATED возвращает пустой массив. Узнать, как происходит рейтинг файлов и почему не работает.
+Рейтинг ОТ 1

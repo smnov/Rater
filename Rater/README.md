@@ -31,3 +31,6 @@ USER
     photos
     gender
     age (date of birth)
+
+
+функция loadFive - загружает пять фоток, и после должна их удалять? 

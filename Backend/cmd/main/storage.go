@@ -21,6 +21,7 @@ type Storage interface {
 	GetFilesOfAccount(id int64) ([]*File, error)
 	GetRandomFile(account_id int64) (*File, error)
 	RateFile(req *RateRequest) error
+	GetRatedFiles() ([]*RateRequest, error)
 	AddFileToDB(int64, *File) error
 }
 
@@ -52,11 +53,11 @@ func (s *PostgresStore) CreateFileTable() error {
 
 func (s *PostgresStore) CreateAccountFileTable() error {
 	query := `CREATE TABLE IF NOT EXISTS account_file (
-		account_id integer NOT NULL REFERENCES account(id),
-		file_id integer NOT NULL REFERENCES file(id),
-		attractiveness_rating numeric,
-		smart_rating numeric,
-		trustworthy_rating numeric,
+		account_id integer NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+		file_id integer NOT NULL REFERENCES file(id) ON DELETE CASCADE,
+		attractiveness_rating numeric DEFAULT 0.0,
+		smart_rating numeric DEFAULT 0.0,
+		trustworthy_rating numeric DEFAULT 0.0,
 		PRIMARY KEY (account_id, file_id)
 );`
 	_, err := s.db.Query(query)
@@ -130,18 +131,30 @@ func (s *PostgresStore) GetAccountByID(id int64) (*Account, error) {
 }
 
 func (s *PostgresStore) AddFileToDB(accountID int64, f *File) error {
-	query := (`INSERT INTO file (name, url, size, tags, created_at, account_id) values ($1, $2, $3, $4, $5, $6)`)
-	_, err := s.db.Query(query, 
-		f.Name, 
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("%s",err)
+	}
+	queryFile := (`INSERT INTO file (name, url, size, tags, created_at, account_id) 
+					VALUES ($1, $2, $3, $4, $5, $6)
+					RETURNING id`)
+
+	var fileId int64
+	err = tx.QueryRow(queryFile,
+		f.Name,
 		f.Url,
 		f.Size,
 		f.Tags,
 		f.CreatedAt,
-		accountID,
-)	
+		accountID).Scan(&fileId)	
 	if err != nil {
-		return fmt.Errorf("%s",err)
+		return err
 	}
+	
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %s", err)
+	}
+
 	return nil
 }
 
@@ -205,10 +218,14 @@ func (s *PostgresStore) GetRandomFile(account_id int64) (*File, error) {
 					SELECT file_id
 					FROM account_file
 					WHERE account_id = $1
-				)`, account_id)
+				) ORDER BY RANDOM()
+				LIMIT 1`, account_id)
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close() // this prevents error "sorry, too many clients already"
+
 	for rows.Next() {
 		return ScanIntoFile(rows)
 	}
@@ -216,12 +233,16 @@ func (s *PostgresStore) GetRandomFile(account_id int64) (*File, error) {
 }
 
 func (s *PostgresStore) RateFile(req *RateRequest) error {
-	query := (`UPDATE account_file
-	SET attractiveness_rating = $1,
-		smart_rating = $2,
-		trustworthy_rating = $3
-	WHERE account_id = $4 AND file_id = $5;`)
-	_, err := s.db.Query(query, 
+	query := (`
+	INSERT INTO account_file (attractiveness_rating, smart_rating, trustworthy_rating, account_id, file_id)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (account_id, file_id)
+		DO UPDATE SET
+			attractiveness_rating = $1,
+			smart_rating = $2,
+			trustworthy_rating = $3;
+	`)
+	_, err := s.db.Exec(query, 
 	req.AttractivenessRating,
 	req.SmartRating,
 	req.TrustworthyRating,
@@ -232,6 +253,30 @@ func (s *PostgresStore) RateFile(req *RateRequest) error {
 		return fmt.Errorf("%s",err)
 	}
 	return nil
+}
+
+func (s *PostgresStore) GetRatedFiles() ([]*RateRequest, error) {
+	// rows, err := s.db.Query(`
+	// SELECT file.*
+    // FROM file
+    // JOIN account_file ON file.id = account_file.file_id
+    // WHERE account_file.account_id = $1;`, id)
+	rows, err := s.db.Query(`
+		SELECT * from account_file 
+	`)
+	if err != nil {
+		return nil, err
+	}
+	files := []*RateRequest{}
+	for rows.Next() {
+		file, err := ScanIntoAccountFile(rows)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, file)
+		fmt.Println(files)
+	}
+	return files, nil
 }
 
 func ScanIntoAccount(rows *sql.Rows) (*Account, error) {
@@ -258,4 +303,16 @@ func ScanIntoFile(rows *sql.Rows) (*File, error) {
 		&file.AccountID,
 	)
 	return file, err
+}
+
+func ScanIntoAccountFile(rows *sql.Rows) (*RateRequest, error) {
+	account_file := new(RateRequest)
+	err := rows.Scan(
+		&account_file.AccountId,
+		&account_file.FileId,
+		&account_file.AttractivenessRating,
+		&account_file.TrustworthyRating,
+		&account_file.SmartRating,
+	)
+	return account_file, err
 }

@@ -6,3 +6,7 @@
 //
 
 import Foundation
+
+func getFullURL(_ URL: String) -> String {
+    return imageURL + URL
+}

@@ -7,12 +7,8 @@
 
 import SwiftUI
 
-struct ViewExt: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+extension View {
+    func hidden(_ shouldHide: Bool) -> some View {
+        opacity(shouldHide ? 0 : 1)
     }
-}
-
-#Preview {
-    ViewExt()
 }

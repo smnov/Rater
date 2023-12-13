@@ -9,15 +9,15 @@ import SwiftUI
 
 struct RaterMainView: View {
     
-    var isLoggedIn = false
+    @EnvironmentObject var state: AppWideState
     
     var body: some View {
         ZStack {
-            LoginView()
-            .padding()
-            
-            if isLoggedIn {
-                RaterTabView()
+            RaterTabView()
+            if !state.isLoggedIn {
+                if !state.token {
+                    LoginView()
+                }
             }
             }
     }
