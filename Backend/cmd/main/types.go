@@ -89,7 +89,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-type RateRequest struct {
+type FileStat struct {
 	AccountId 				int64 		`json:"accound_id"`
 	FileId 					int64 		`json:"file_id"`
 	AttractivenessRating 	float64 	`json:"attractiveness_rating"`

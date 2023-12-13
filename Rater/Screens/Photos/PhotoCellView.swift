@@ -33,7 +33,6 @@ struct PhotoCellView: View {
                     } catch let error {
                         print(error)
                     }
-                    
                 }
             } label: {
                 Text("Rate")

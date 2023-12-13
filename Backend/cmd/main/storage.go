@@ -20,8 +20,9 @@ type Storage interface {
 	DeleteFileById(file_id int64) error
 	GetFilesOfAccount(id int64) ([]*File, error)
 	GetRandomFile(account_id int64) (*File, error)
-	RateFile(req *RateRequest) error
-	GetRatedFiles() ([]*RateRequest, error)
+	GetStatOfFile(fileId int64) (*FileStat, error)
+	RateFile(req *FileStat) error
+	GetRatedFiles() ([]*FileStat, error)
 	AddFileToDB(int64, *File) error
 }
 
@@ -130,6 +131,21 @@ func (s *PostgresStore) GetAccountByID(id int64) (*Account, error) {
 	return nil, fmt.Errorf("account %d not found", id)
 }
 
+func (s *PostgresStore) GetStatOfFile(id int64) (*FileStat, error) {
+	rows, err := s.db.Query(`
+		SELECT * from account_file WHERE file_id = $1
+	`, id)
+
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		return ScanIntoAccountFile(rows)
+	}
+
+	return nil, fmt.Errorf("file stat not found")
+}
+
 func (s *PostgresStore) AddFileToDB(accountID int64, f *File) error {
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -232,7 +248,7 @@ func (s *PostgresStore) GetRandomFile(account_id int64) (*File, error) {
 	return nil, err
 }
 
-func (s *PostgresStore) RateFile(req *RateRequest) error {
+func (s *PostgresStore) RateFile(req *FileStat) error {
 	query := (`
 	INSERT INTO account_file (attractiveness_rating, smart_rating, trustworthy_rating, account_id, file_id)
 		VALUES ($1, $2, $3, $4, $5)
@@ -255,7 +271,7 @@ func (s *PostgresStore) RateFile(req *RateRequest) error {
 	return nil
 }
 
-func (s *PostgresStore) GetRatedFiles() ([]*RateRequest, error) {
+func (s *PostgresStore) GetRatedFiles() ([]*FileStat, error) {
 	// rows, err := s.db.Query(`
 	// SELECT file.*
     // FROM file
@@ -267,7 +283,7 @@ func (s *PostgresStore) GetRatedFiles() ([]*RateRequest, error) {
 	if err != nil {
 		return nil, err
 	}
-	files := []*RateRequest{}
+	files := []*FileStat{}
 	for rows.Next() {
 		file, err := ScanIntoAccountFile(rows)
 		if err != nil {
@@ -305,8 +321,8 @@ func ScanIntoFile(rows *sql.Rows) (*File, error) {
 	return file, err
 }
 
-func ScanIntoAccountFile(rows *sql.Rows) (*RateRequest, error) {
-	account_file := new(RateRequest)
+func ScanIntoAccountFile(rows *sql.Rows) (*FileStat, error) {
+	account_file := new(FileStat)
 	err := rows.Scan(
 		&account_file.AccountId,
 		&account_file.FileId,

@@ -163,6 +163,19 @@ func (s * APIServer) GetFileHandler(w http.ResponseWriter, r *http.Request) erro
 	return nil
 }
 
+func (s *APIServer) GetStatOfFileHandler(w http.ResponseWriter, r *http.Request) error {
+	fileId, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	fileStat, err := s.store.GetStatOfFile(fileId)
+	if err != nil {
+		return err
+	}
+	return JSONSerializer(w, http.StatusOK, fileStat)
+}
+
 func (s *APIServer) GetRandomFileHandler(w http.ResponseWriter, r *http.Request) error {
 	accountId := getUserIDFromToken(r)
 	randomFile, err := s.store.GetRandomFile(accountId) 
@@ -181,7 +194,7 @@ func (s *APIServer) RateFileHandler(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return err
 	}
-	req := new(RateRequest)
+	req := new(FileStat)
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			return err
 		}

@@ -10,7 +10,7 @@ struct Photo: Identifiable, Codable {
     var url: String
 }
 
-struct Rating: Codable {
+struct PhotoRating: Codable {
     var attractiveness_rating: Float
     var smart_rating: Float
     var trustworthy_rating: Float
