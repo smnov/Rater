@@ -20,7 +20,7 @@ import Foundation
             case .success(let data):
                 self.photoStat = data
             case .failure(let error):
-                print(error)
+                print("Error while getting stat: \(error)")
             }
         } catch {
             print(error)

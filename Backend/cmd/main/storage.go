@@ -114,6 +114,7 @@ func (s *PostgresStore) GetAccountByName(name string) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		return ScanIntoAccount(rows)
 	}
@@ -125,6 +126,7 @@ func (s *PostgresStore) GetAccountByID(id int64) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		return ScanIntoAccount(rows)
 	}
@@ -139,6 +141,7 @@ func (s *PostgresStore) GetStatOfFile(id int64) (*FileStat, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		return ScanIntoAccountFile(rows)
 	}
@@ -183,6 +186,7 @@ func (s *PostgresStore) GetFiles() ([]*File, error) {
 	}
 
 	files := []*File{}
+	defer rows.Close()
 	for rows.Next() {
 		file, err := ScanIntoFile(rows)
 		if err != nil {
@@ -199,6 +203,7 @@ func (s *PostgresStore) GetFilesOfAccount(id int64) ([]*File, error) {
 		return nil, err
 	}
 	files := []*File{}
+	defer rows.Close()
 	for rows.Next() {
 		file, err := ScanIntoFile(rows)
 		if err != nil {
@@ -214,6 +219,9 @@ func (s *PostgresStore) GetFileById(id int64) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
+
 	for rows.Next() {
 		return ScanIntoFile(rows)
 	}
@@ -283,6 +291,7 @@ func (s *PostgresStore) GetRatedFiles() ([]*FileStat, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	files := []*FileStat{}
 	for rows.Next() {
 		file, err := ScanIntoAccountFile(rows)

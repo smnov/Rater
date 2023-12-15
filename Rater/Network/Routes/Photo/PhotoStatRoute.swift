@@ -12,6 +12,7 @@ struct PhotoStatRoute {
         guard let url = URL(string: getStatURL(id: id)) else {
             return .failure(NetworkError.invalidURL)
         }
+        print(url)
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

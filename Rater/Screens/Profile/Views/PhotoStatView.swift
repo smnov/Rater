@@ -15,11 +15,11 @@ struct PhotoStatView: View {
     var body: some View {
         VStack {
             if let photoStat = viewmodel.photoStat {
-                Text("\(photoStat.attractiveness_rating)")
-                Text("\(photoStat.smart_rating)")
-                Text("\(photoStat.trustworthy_rating)")
+                Text("Attractiveness: " + String(format: "%.2f", photoStat.attractiveness_rating))
+                Text("Smart: " + String(format: "%.2f", photoStat.smart_rating))
+                Text("Trustworthy: " + String(format: "%.2f", photoStat.trustworthy_rating))
             } else {
-                Text("NOOO")
+                
             }
         }
         .task {

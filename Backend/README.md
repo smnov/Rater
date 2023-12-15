@@ -9,10 +9,12 @@ docker run --name rater_db -e POSTGRES_PASSWORD=rater_password -p 5432:5432 -d p
     функция по изменению рейтинга
     таблица мэнитумэни (DONE)
 
-Только свой аккаунт можно смотреть (DONE)
 
 delete file
 
 refactor 
-FILES RATED возвращает пустой массив. Узнать, как происходит рейтинг файлов и почему не работает.
-Рейтинг ОТ 1
+
+Удаление
+Active
+Random photo
+Отображение рейтинга

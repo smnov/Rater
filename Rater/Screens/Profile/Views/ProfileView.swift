@@ -19,11 +19,21 @@ struct ProfileView: View {
                         Text("Profile:")
                         Text("\(profile.name)")
                         Spacer()
-                        Image(systemName: "gear")
+                        Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
+                            Image(systemName: "gear")
+                                .foregroundColor(.black)
+                        })
                     }
                     Spacer()
                     ProfileImages()
                 }
+                Button(action: {
+                    viewmodel.uploadPhoto()
+                }, label: {
+                    Text("Upload")
+                        
+                })
+                .padding(10)
             }
             .task {
                 do {

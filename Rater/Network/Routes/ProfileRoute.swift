@@ -73,4 +73,39 @@ struct ProfileRoute {
         
         task.resume()
     }
+    
+    func uploadPhoto(image: UIImage) -> Result<Photo,Error> {
+        guard let url = URL(string: uploadURL) else {
+            return .failure(NetworkError.invalidURL)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data, boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        
+        if let imageData = image.jpegData(compressionQuality: 0.5) {
+                body.append("--\(boundary)\r\n")
+                body.append("Content-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"\r\n")
+                body.append("Content-Type: image/jpeg\r\n\r\n")
+                body.append(imageData)
+                body.append("\r\n")
+            }
+
+            body.append("--\(boundary)--\r\n")
+
+            request.httpBody = body
+
+
+            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+                if let error = error {
+                    completion(error)
+                    return
+                }
+
+
+                completion(nil)
+    }
 }

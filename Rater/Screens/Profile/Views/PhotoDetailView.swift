@@ -26,8 +26,11 @@ struct PhotoDetailView: View {
             PhotoStatView(id: photo.id)
             HStack {
                 Spacer()
-                Image(systemName: "trash")
-                    .padding(5)
+                Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
+                    Image(systemName: "trash")
+                        .padding(10)
+                })
+                
                 
             }
         }

@@ -43,5 +43,9 @@ extension ProfileView {
             }
             isLoading = false
         }
+        
+        func uploadPhoto() {
+            
+        }
     }
 }
