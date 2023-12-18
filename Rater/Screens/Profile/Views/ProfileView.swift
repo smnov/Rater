@@ -13,36 +13,31 @@ struct ProfileView: View {
     
     var body: some View {
         ZStack {
-            VStack {
-                if let profile = viewmodel.profile {
-                    HStack {
-                        Text("Profile:")
-                        Text("\(profile.name)")
+            ScrollView {
+                VStack {
+                    if let profile = viewmodel.profile {
+                        HStack {
+                            Text("Profile:")
+                            Text("\(profile.name)")
+                            Spacer()
+                            Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
+                                Image(systemName: "gear")
+                                    .foregroundColor(.black)
+                            })
+                        }
                         Spacer()
-                        Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
-                            Image(systemName: "gear")
-                                .foregroundColor(.black)
-                        })
+                        ProfileImages()
                     }
-                    Spacer()
-                    ProfileImages()
+                    UploadPhotoView()
                 }
-                Button(action: {
-                    viewmodel.uploadPhoto()
-                }, label: {
-                    Text("Upload")
-                        
-                })
-                .padding(10)
-            }
-            .task {
-                do {
-                    try await viewmodel.loadProfile()
-                } catch let error {
-                    print(error)
+                .task {
+                    do {
+                        try await viewmodel.loadProfile()
+                    } catch let error {
+                        print(error)
+                    }
                 }
             }
-           
         }
     }
     }

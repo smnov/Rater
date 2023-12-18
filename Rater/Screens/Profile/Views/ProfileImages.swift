@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileImages: View {
     
-    @StateObject var viewmodel = ProfileView.ProfileViewModel()
+    @StateObject var viewmodel = ProfileViewModel()
     
     
     var body: some View {

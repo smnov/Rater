@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 struct ProfileResponse: Codable {
     let profile: Profile
@@ -74,38 +75,59 @@ struct ProfileRoute {
         task.resume()
     }
     
-    func uploadPhoto(image: UIImage) -> Result<Photo,Error> {
+    func uploadPhoto(fileName: String, image: UIImage, completed: @escaping (Result<Photo,Error>) -> Void) {
         guard let url = URL(string: uploadURL) else {
-            return .failure(NetworkError.invalidURL)
+            return completed(.failure(NetworkError.invalidData))
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
+        do {
+            let token = try Store.shared.getTokenFromStorage()
+            request.setValue(token, forHTTPHeaderField: "jwt-token")
+        } catch {
+            completed(.failure(KeyStoreError.unableToGetData))
+        }
+        
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            // Handle error if unable to convert image to data
+            return
+        }
+        
         let boundary = UUID().uuidString
-        request.setValue("multipart/form-data, boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
+        let clrf = "\r\n"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         var body = Data()
+        body.append("--\(boundary)")
+        body.append(clrf)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"")
+        body.append(clrf)
+        body.append("Content-Type: image/jpeg")
+        body.append(clrf)
+        body.append(clrf)
+        body.append(imageData)
+        body.append(clrf)
+        body.append("--\(boundary)--")
+        body.append(clrf)
+
+        request.httpBody = body
         
-        if let imageData = image.jpegData(compressionQuality: 0.5) {
-                body.append("--\(boundary)\r\n")
-                body.append("Content-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"\r\n")
-                body.append("Content-Type: image/jpeg\r\n\r\n")
-                body.append(imageData)
-                body.append("\r\n")
-            }
+        print("Request URL: \(request.url?.absoluteString ?? "")")
+        print("HTTP Method: \(request.httpMethod ?? "")")
+        print("Headers: \(request.allHTTPHeaderFields ?? [:])")
 
-            body.append("--\(boundary)--\r\n")
-
-            request.httpBody = body
-
-
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-                if let error = error {
-                    completion(error)
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                completed(.failure(NetworkError.invalidResponse))
+            } else {
+                guard (response as? HTTPURLResponse)?.statusCode ?? 0 == 200 else {
+                    print((response as? HTTPURLResponse)!.statusCode)
+                    completed(.failure(NetworkError.invalidResponseStatusCode))
                     return
                 }
-
-
-                completion(nil)
+            }
+        }
+            task.resume()
+        }
     }
-}

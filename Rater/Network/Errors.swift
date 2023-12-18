@@ -29,6 +29,7 @@ enum NetworkError: Error {
     case notFound
     case invalidURL
     case invalidResponse
+    case invalidResponseStatusCode
     case invalidCredentials
     case emptyResult
 }
@@ -46,6 +47,8 @@ extension NetworkError: LocalizedError {
             return NSLocalizedString("URL is invalid", comment: "")
         case .invalidCredentials:
             return NSLocalizedString("Credentials are invalid", comment: "")
+        case .invalidResponseStatusCode:
+            return NSLocalizedString("Not expected status code", comment: "")
         default:
             return NSLocalizedString("default", comment: "")
         
