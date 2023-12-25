@@ -58,3 +58,14 @@ public extension Data {
         append(data)
     }
 }
+
+//extension Result {
+//    func get() throws -> Value {
+//        switch self {
+//        case .success(let value):
+//            return value
+//        case .failure(let error):
+//            throw error
+//        }
+//    }
+//}

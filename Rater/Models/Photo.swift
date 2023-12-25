@@ -30,3 +30,7 @@ struct PhotoRateRequest: Codable {
         account_id = id
     }
 }
+
+struct PhotoGetRequest: Codable {
+    var file_id: Int
+}

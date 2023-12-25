@@ -13,23 +13,32 @@ struct ProfileView: View {
     
     var body: some View {
         ZStack {
-            ScrollView {
-                VStack {
-                    if let profile = viewmodel.profile {
-                        HStack {
-                            Text("Profile:")
-                            Text("\(profile.name)")
+            NavigationView {
+                ScrollView {
+                    VStack {
+                        if let profile = viewmodel.profile {
+                            HStack(spacing: 10) {
+                                Text("Profile: \(profile.name)")
+                                    .fontWeight(.semibold)
+                                Spacer()
+                                NavigationLink(destination: SettingsView()) {
+                                    Image(systemName: "gearshape.fill")
+                                        .renderingMode(.original)
+                                        .frame(width: 16, height: 16)
+                                        .foregroundColor(.black)
+                                }
+                            }
+                            .padding(20)
                             Spacer()
-                            Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
-                                Image(systemName: "gear")
-                                    .foregroundColor(.black)
-                            })
+                            ProfileImages()
                         }
-                        Spacer()
-                        ProfileImages()
+                        }
+                        Spacer(minLength: 20)
+                        UploadPhotoView()
                     }
-                    UploadPhotoView()
                 }
+                
+                
                 .task {
                     do {
                         try await viewmodel.loadProfile()
@@ -38,8 +47,8 @@ struct ProfileView: View {
                     }
                 }
             }
+            .navigationTitle("Settings")
         }
-    }
     }
 
 #Preview {

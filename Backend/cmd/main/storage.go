@@ -45,6 +45,7 @@ func (s *PostgresStore) CreateFileTable() error {
 		url varchar(150) unique,
 		size serial,
 		tags varchar[],
+		votes integer DEFAULT 0, 
 		created_at timestamp,
 		account_id integer NOT NULL REFERENCES account(id)
 	)`
@@ -262,9 +263,9 @@ func (s *PostgresStore) RateFile(req *FileStat) error {
 		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (account_id, file_id)
 		DO UPDATE SET
-			attractiveness_rating = $1,
-			smart_rating = $2,
-			trustworthy_rating = $3;
+			attractiveness_rating = attractiveness_rating + $1,
+			smart_rating = smart_rating + $2,
+			trustworthy_rating = trustworthy_rating + $3;
 	`)
 	_, err := s.db.Exec(query, 
 	req.AttractivenessRating,

@@ -37,6 +37,7 @@ struct ProfileImages: View {
                     }
                 }
             }
+            .padding(.top)
             .blur(radius: viewmodel.isShowingDetail ? 20 : 0)
             
             if viewmodel.isLoading {
@@ -46,6 +47,7 @@ struct ProfileImages: View {
                 PhotoDetailView(isShowingDetail: $viewmodel.isShowingDetail, photo: viewmodel.SelectedPhoto!)
             }
         }
+        .border(Color.black, width: 1)
         .task {
             do {
                 try await viewmodel.loadProfilePhotos()
@@ -55,6 +57,7 @@ struct ProfileImages: View {
         }
         
     }
+        
 }
 
 #Preview {

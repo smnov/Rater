@@ -25,6 +25,10 @@ struct Store {
         }
     }
     
+    func deleteTokenFromStorage() {
+        UserDefaults.standard.removeObject(forKey: "jwt-token")
+    }
+    
     func getUserIdFromToken(token: String) throws -> Int {
         let decodedToken = try decode(jwt: token)
         if let id = decodedToken["account_id"].integer {

@@ -13,6 +13,7 @@ type File struct {
 	Url 			string			`json:"url"`
 	Size 			int64 			`json:"size"`
 	Tags			pq.StringArray	`json:"tags"`
+	Votes			int64 			`json:"votes"`
 	CreatedAt 		time.Time 		`json:"created_at"`
 	AccountID		int64			`json:"account_id"`
 }

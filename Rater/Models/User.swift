@@ -17,3 +17,10 @@ struct Profile: Codable {
     var email: String = "alex"
     var created_at: String = "123"
 }
+
+struct UserRegister: Codable {
+    var name: String
+    var email: String
+    var password1: String
+    var password2: String
+}

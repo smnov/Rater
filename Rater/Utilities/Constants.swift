@@ -13,6 +13,15 @@ let imageURL = "http://localhost:8000/account/profile/files/image/"
 let randomPhotoURL = "http://localhost:8000/files/random"
 let rateURL = "http://localhost:8000/files/"
 
+
 func getStatURL(id: Int) -> String {
     return baseURL + "account/profile/files/\(id)/stat"
+}
+
+func getFileURLById(id: Int) -> String {
+    return baseURL + "account/profile/files/\(id)"
+}
+
+func getRegisterURL() -> String {
+    return baseURL + "account"
 }

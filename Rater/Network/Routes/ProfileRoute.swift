@@ -118,11 +118,10 @@ struct ProfileRoute {
 
         
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-            if let error = error {
+            if error != nil {
                 completed(.failure(NetworkError.invalidResponse))
             } else {
                 guard (response as? HTTPURLResponse)?.statusCode ?? 0 == 200 else {
-                    print((response as? HTTPURLResponse)!.statusCode)
                     completed(.failure(NetworkError.invalidResponseStatusCode))
                     return
                 }

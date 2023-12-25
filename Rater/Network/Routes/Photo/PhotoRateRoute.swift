@@ -63,6 +63,26 @@ struct PhotoRateRoute {
         guard (response as? HTTPURLResponse)?.statusCode ?? 0 == 200 else {
             throw NetworkError.invalidResponse
             }
-        print(response)
+    }
+    
+    func deletePhoto(_ fileId: Int) async throws -> Error? {
+        guard let url = URL(string: getFileURLById(id: fileId)) else {
+            return NetworkError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        do {
+            let token = try Store.shared.getTokenFromStorage()
+            request.setValue(token, forHTTPHeaderField: "jwt-token")
+        } catch {
+            return KeyStoreError.unableToGetData
+        }
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode
+        if statusCode != 200 {
+            return NetworkError.invalidResponse
+        }
+        return nil
     }
 }

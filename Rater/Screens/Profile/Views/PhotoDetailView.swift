@@ -10,9 +10,12 @@ import SwiftUI
 struct PhotoDetailView: View {
     
     @Binding var isShowingDetail: Bool
+    @State var isDeleteConfirm: Bool = false
+    @StateObject var viewmodel = PhotosViewModel()
     
     let photo: Photo
     var body: some View {
+        
         VStack(spacing: 20) {
             AsyncImageWithAuth(url: URL(string: getFullURL(photo.url))) { image in image 
                 .resizable()
@@ -26,12 +29,21 @@ struct PhotoDetailView: View {
             PhotoStatView(id: photo.id)
             HStack {
                 Spacer()
-                Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
+                Button(role: .destructive,
+                       action: {
+                    isDeleteConfirm = true
+                }, label: {
                     Image(systemName: "trash")
                         .padding(10)
                 })
-                
-                
+            }
+            .confirmationDialog("Are you sure you want to delete this photo?",
+                                isPresented: $isDeleteConfirm) {
+                Button("Delete this photo?", role: .destructive) {
+                    Task {
+                        await viewmodel.deletePhoto(fileId: photo.id)
+                    }
+                }
             }
         }
         .aspectRatio(contentMode: .fit)
