@@ -63,6 +63,15 @@ class LoginRoute {
         
         request.httpBody = data
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            print((response as? HTTPURLResponse)!.statusCode)
+            switch (response as? HTTPURLResponse)!.statusCode {
+                case 400:
+                    completed(.failure(NetworkError.invalidUsernameOrPassword))
+                case 200:
+                    break
+                default:
+                    completed(.failure(NetworkError.invalidResponse ))
+                }
             if let data = data {
                 do {
                     let responseArray = try JSONDecoder().decode([LoginResponse].self, from: data)
@@ -71,11 +80,12 @@ class LoginRoute {
                     try Store.shared.saveTokenIntoStorage(token!)
                     completed(.success(loginResponse!))
                 } catch {
-                    completed(.failure(NetworkError.decodingError))
+                    completed(.failure(NetworkError.invalidUsernameOrPassword))
                 }
                 
             }
         }
+        task.resume()
     }
 }
 

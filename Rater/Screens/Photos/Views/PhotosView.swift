@@ -21,7 +21,10 @@ struct PhotosView: View {
                         } 
                         
                     } else {
-                        Text("No photos available")
+                        Spacer()
+                        ContentUnavailableView("No new images",
+                                               systemImage:"photo.stack",
+                                               description: Text("Try again later :("))
                     }
                     
                 }

@@ -31,6 +31,7 @@ enum NetworkError: Error {
     case invalidResponse
     case invalidResponseStatusCode
     case invalidCredentials
+    case invalidUsernameOrPassword
     case emptyResult
     case userAlreadyExist
     case decodingError
@@ -52,6 +53,8 @@ extension NetworkError: LocalizedError {
             return NSLocalizedString("Credentials are invalid", comment: "")
         case .invalidResponseStatusCode:
             return NSLocalizedString("Not expected status code", comment: "")
+        case .invalidUsernameOrPassword:
+            return NSLocalizedString("Username or password is invalid", comment: "")
         case .userAlreadyExist:
             return NSLocalizedString("This user is already exist", comment: "")
         case .decodingError:

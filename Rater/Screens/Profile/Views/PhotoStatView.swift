@@ -15,9 +15,9 @@ struct PhotoStatView: View {
     var body: some View {
         VStack {
             if let photoStat = viewmodel.photoStat {
-                Text("Attractiveness: " + String(format: "%.2f", photoStat.attractiveness_rating))
-                Text("Smart: " + String(format: "%.2f", photoStat.smart_rating))
-                Text("Trustworthy: " + String(format: "%.2f", photoStat.trustworthy_rating))
+                PhotoProgressView(title: "Attractiveness", progressNum: photoStat.attractiveness_rating, color: Color.pink)
+                PhotoProgressView(title: "Smartness",progressNum: photoStat.smart_rating, color: Color.blue)
+                PhotoProgressView(title: "Trustworthy", progressNum: photoStat.trustworthy_rating, color: Color.red)
             } else {
                 
             }
@@ -25,6 +25,22 @@ struct PhotoStatView: View {
         .task {
             await viewmodel.getStatOfPhoto(id: id)
         }
+    }
+}
+
+struct PhotoProgressView: View {
+    var title: String
+    var progressNum: Float
+    var color: Color
+    
+    var body: some View {
+        ProgressView(value: (progressNum / 10)) {
+                            Text("\(title)")
+                        } currentValueLabel: {
+                            Text("Current Value:" + String(format: "%.2f", progressNum))
+                                .tint(color)
+                        }
+                    
     }
 }
 

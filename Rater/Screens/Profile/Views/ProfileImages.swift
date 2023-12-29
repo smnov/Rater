@@ -17,22 +17,28 @@ struct ProfileImages: View {
             VStack {
                 NavigationView {
                     if let photos = viewmodel.photos {
-                        ScrollView {
-                            LazyVGrid(columns: viewmodel.columns) {
-                                ForEach(photos, id: \.id) { photo in
-                                    AsyncImageWithAuth(url: URL(string: getFullURL(photo.url))) { image in image
-                                            .resizable()
-                                    } placeholder: {
-                                        Image("placeholder")
-                                            .resizable()
-                                    }
-                                    .frame(width: 100, height: 100)
-                                    .onTapGesture {
-                                        viewmodel.SelectedPhoto = photo
-                                        viewmodel.isShowingDetail = true
+                        if !photos.isEmpty {
+                            ScrollView {
+                                LazyVGrid(columns: viewmodel.columns) {
+                                    ForEach(photos, id: \.id) { photo in
+                                        AsyncImageWithAuth(url: URL(string: getFullURL(photo.url))) { image in image
+                                                .resizable()
+                                        } placeholder: {
+                                            Image("placeholder")
+                                                .resizable()
+                                        }
+                                        .frame(width: 100, height: 100)
+                                        .onTapGesture {
+                                            viewmodel.SelectedPhoto = photo
+                                            viewmodel.isShowingDetail = true
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            ContentUnavailableView("No images",
+                                                   systemImage:"photo.stack",
+                                                   description: Text("You need to add photos"))
                         }
                     }
                 }

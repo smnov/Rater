@@ -16,6 +16,7 @@ import SwiftUI
     @Published var photos: [Photo]?
     @Published var isLoading = false
     @Published var isShowingDetail = false
+    @Published var alertItem: AlertItem?
     
     var SelectedPhoto: Photo?
     
@@ -52,10 +53,9 @@ import SwiftUI
             case .success(let photo):
                 print("success")
             case .failure(let error):
-                print("Error: \(error)")
+                self.alertItem = AlertItem(title: Text("Error"), message: Text("\(error.localizedDescription)"), dismissButton: .default(Text("OK")))
                 
             }
-            print("uploaded")
         }
         isLoading = false
     }

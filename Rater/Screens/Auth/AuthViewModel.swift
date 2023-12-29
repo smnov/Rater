@@ -10,17 +10,18 @@ import Foundation
 @MainActor class AuthViewModel: ObservableObject {
     
     @Published var isLoggedIn: Bool = false
-    @Published var showError = false
+    @Published var alertItem: AlertItem?
     
     
     
-    func login(username: String, password: String) {
+    func login(username: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
         LoginRoute.shared.login(name: username, password: password) { result in
             switch result {
-            case .success(let response):
-                return
+            case .success:
+                self.isLoggedIn = true
+                completion(.success(()))
             case .failure(let error):
-                print(error)
+                completion(.failure(error))
             }
         }
     }
@@ -31,7 +32,14 @@ import Foundation
         route.register(userData: userData) { result in
             switch result {
             case .success(let user):
-                self.login(username: user.name, password: userData.password1)
+                self.login(username: user.name, password: userData.password1) { loginResult in
+                    switch loginResult {
+                    case .success:
+                        self.isLoggedIn = true
+                    case .failure(let loginError):
+                        print(loginError)
+                    }
+                }
             case .failure(let error):
                 print(error)
             }

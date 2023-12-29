@@ -26,6 +26,7 @@ struct PhotoDetailView: View {
                     .resizable()
                     .scaledToFill()
             }
+            Text("Votes: \(photo.votes)")
             PhotoStatView(id: photo.id)
             HStack {
                 Spacer()

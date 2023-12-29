@@ -80,12 +80,26 @@ func (s *APIServer) GetFilesOfAccountHandler(w http.ResponseWriter, r *http.Requ
 
 func (s *APIServer) CreateAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
-		http.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
+		return JSONSerializer(w, http.StatusMethodNotAllowed, "Method is not allowed")
 	}
 		req := new(CreateAccountRequest)
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			return err
 		}
+
+		if req == nil {
+			return JSONSerializer(w, http.StatusBadRequest, "Request body cannot be empty")
+		}
+
+		if req.Name == "" || req.Email == "" || req.Password1 == "" {
+			return JSONSerializer(w, http.StatusBadRequest, "Name, Email, and Password are required fields")
+		}	
+
+		err := IfUsernameOrPasswordTooShort(req.Name, req.Password1)		
+		if err != nil {
+			return err
+		}
+
 		account, err := NewAccount(req.Name, req.Email, req.Password1, req.Password2)
 		if err != nil {
 			return err
@@ -106,10 +120,6 @@ func (s *APIServer) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	acc, err := s.store.GetAccountByName(req.Name)
 	if err != nil {
 		return err
-	}
-
-	if !acc.ValidPassword(req.Password) {
-		return fmt.Errorf("Invalid password")
 	}
 	
 	token, err := createJWT(acc)
@@ -224,6 +234,8 @@ func (s *APIServer) GetImageByURL(w http.ResponseWriter, r *http.Request) error 
 	filePath := path.Join(fileFolder, accountName, fileName)
 	filePath = strings.TrimRight(filePath, "\n") // For some reason filePath adds "\n" in the end. Here we remove it.
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		fmt.Println(filePath)
+		fmt.Println(fileName)
 		fmt.Println("uploads no exist")
 	}
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {		

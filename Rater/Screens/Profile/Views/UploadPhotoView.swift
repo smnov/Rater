@@ -22,6 +22,9 @@ struct UploadPhotoView: View {
                 .cornerRadius(10)
                 .padding()
         }
+        .alert(item: $viewmodel.alertItem) { alert in
+            Alert(title: alert.message, dismissButton: alert.dismissButton)
+    }
         .onChange(of: photoItem) {
             Task {
                 if let loaded = try? await photoItem?.loadTransferable(type: Image.self) {

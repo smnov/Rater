@@ -8,6 +8,7 @@
 struct Photo: Identifiable, Codable {
     var id: Int
     var url: String
+    var votes: Int
 }
 
 struct PhotoRating: Codable {
@@ -16,7 +17,7 @@ struct PhotoRating: Codable {
     var trustworthy_rating: Float
 }
 
-let samplePhoto = Photo(id: 0, url: "placeholder")
+let samplePhoto = Photo(id: 0, url: "placeholder", votes: 0)
 
 
 struct PhotoRateRequest: Codable {

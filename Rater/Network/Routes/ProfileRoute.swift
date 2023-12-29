@@ -52,7 +52,7 @@ struct ProfileRoute {
         }
         let (data, _) = try await URLSession.shared.data(for: request)
         guard let decodedResponse = try? JSONDecoder().decode([[Photo]].self, from: data) else {
-            return [Photo(id: 1, url: "qwe")]
+            throw NetworkError.decodingError
         }
         return decodedResponse[0]
     }
@@ -120,6 +120,7 @@ struct ProfileRoute {
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             if error != nil {
                 completed(.failure(NetworkError.invalidResponse))
+                return
             } else {
                 guard (response as? HTTPURLResponse)?.statusCode ?? 0 == 200 else {
                     completed(.failure(NetworkError.invalidResponseStatusCode))

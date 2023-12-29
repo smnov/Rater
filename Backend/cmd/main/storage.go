@@ -263,9 +263,9 @@ func (s *PostgresStore) RateFile(req *FileStat) error {
 		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (account_id, file_id)
 		DO UPDATE SET
-			attractiveness_rating = attractiveness_rating + $1,
-			smart_rating = smart_rating + $2,
-			trustworthy_rating = trustworthy_rating + $3;
+			attractiveness_rating = account_file.attractiveness_rating + $1,
+			smart_rating = account_file.smart_rating + $2,
+			trustworthy_rating = account_file.trustworthy_rating + $3;
 	`)
 	_, err := s.db.Exec(query, 
 	req.AttractivenessRating,
@@ -277,15 +277,20 @@ func (s *PostgresStore) RateFile(req *FileStat) error {
 	if err != nil {
 		return fmt.Errorf("%s",err)
 	}
+
+	fileQuery := (`
+		UPDATE file
+		SET votes = votes + 1
+		WHERE id = $1;
+	`)
+	_, err = s.db.Exec(fileQuery, req.FileId) 
+	if err != nil {
+		return fmt.Errorf("%s",err)
+	}
 	return nil
 }
 
 func (s *PostgresStore) GetRatedFiles() ([]*FileStat, error) {
-	// rows, err := s.db.Query(`
-	// SELECT file.*
-    // FROM file
-    // JOIN account_file ON file.id = account_file.file_id
-    // WHERE account_file.account_id = $1;`, id)
 	rows, err := s.db.Query(`
 		SELECT * from account_file 
 	`)
@@ -325,6 +330,7 @@ func ScanIntoFile(rows *sql.Rows) (*File, error) {
 		&file.Url,
 		&file.Size,
 		&file.Tags,
+		&file.Votes,
 		&file.CreatedAt,
 		&file.AccountID,
 	)

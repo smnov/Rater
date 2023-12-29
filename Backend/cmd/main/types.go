@@ -58,6 +58,13 @@ func (a *Account) ValidPassword(pw string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(a.EncryptedPassword), []byte(pw)) == nil
 }
 
+func IfUsernameOrPasswordTooShort(uname, pw string) error {
+	if len(uname) < 4 && len(pw) < 4 {
+		return fmt.Errorf("Username or password is too short!")
+	}
+	return nil
+}
+
 func NewAccount(name, email, password1, password2 string) (*Account, error) {
 	if err := ComparePasswords(password1, password2); err != nil {
 		return nil, err

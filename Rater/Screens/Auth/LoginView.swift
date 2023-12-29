@@ -48,12 +48,32 @@ struct LoginView: View {
                         .cornerRadius(10)
                         .textInputAutocapitalization(.never)
                         .border(.red, width: CGFloat(wrongPassword))
-                        
+                    
                     Button {
                         Task {
-                            do {
-                                viewmodel.login(username: username, password: password)
-                                state.isLoggedIn = true
+                            guard !username.isEmpty, !password.isEmpty else {
+                                viewmodel.alertItem = AlertItem(title: Text("Error"), message: Text("Username and password cannot be empty"), dismissButton: .default(Text("OK")))
+                                return
+                            }
+
+                            viewmodel.login(username: username, password: password) { result in
+                                switch result {
+                                case .success:
+                                    state.isLoggedIn = true
+                                case .failure(let error):
+                                    switch error {
+                                    case NetworkError.invalidUsernameOrPassword:
+                                        viewmodel.alertItem = AlertContext.invalidUsernameOrPassword
+                                    case NetworkError.invalidURL:
+                                        viewmodel.alertItem = AlertContext.invalidURL
+                                    case NetworkError.invalidResponse:
+                                        viewmodel.alertItem = AlertContext.invalidResponse
+                                    case NetworkError.decodingError:
+                                        viewmodel.alertItem = AlertContext.incompleteForm
+                                    default:
+                                        viewmodel.alertItem = AlertContext.unableToComplete
+                                    }
+                                }
                             }
                         }
                     } label: {
@@ -69,8 +89,11 @@ struct LoginView: View {
                     NavigationLink("Sign Up", destination: SignUpView())
                 }
             }
+            .alert(item: $viewmodel.alertItem) { alert in
+                Alert(title: alert.message, dismissButton: alert.dismissButton)
         }
         
+        }
         .navigationBarHidden(true)
     }
 }

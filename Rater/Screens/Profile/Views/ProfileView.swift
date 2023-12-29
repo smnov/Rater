@@ -31,8 +31,9 @@ struct ProfileView: View {
                             .padding(20)
                             Spacer()
                             ProfileImages()
-                        }
-                        }
+                        }                       
+                    }
+                    
                         Spacer(minLength: 20)
                         UploadPhotoView()
                     }
