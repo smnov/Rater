@@ -19,8 +19,7 @@ struct PhotoDetailView: View {
         VStack(spacing: 20) {
             AsyncImageWithAuth(url: URL(string: getFullURL(photo.url))) { image in image 
                 .resizable()
-                .aspectRatio(contentMode: .fill)
-                .edgesIgnoringSafeArea(.all)
+                .scaledToFill()
             } placeholder: {
                 Image("placeholder")
                     .resizable()

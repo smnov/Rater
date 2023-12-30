@@ -52,7 +52,6 @@ import Foundation
             case .success(let randomPhoto):
                 isLoading = false
                 return randomPhoto
-                
             case .failure(let error):
                 isLoading = false
                 throw error

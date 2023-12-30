@@ -17,7 +17,7 @@ struct UploadPhotoView: View {
         VStack {
             PhotosPicker("Upload Photo", selection: $photoItem, matching: .images)
                 .foregroundColor(.white)
-                .frame(width: 300, height: 50)
+                .frame(width: 200, height: 50)
                 .background(Color.red)
                 .cornerRadius(10)
                 .padding()

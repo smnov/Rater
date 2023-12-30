@@ -23,6 +23,8 @@ struct SliderView: View {
                 isEditing = editing
             }
         )
-        .tint(Color(.purple))
+        .tint(Color(.red))
     }
 }
+
+

@@ -23,11 +23,16 @@ struct ProfileImages: View {
                                     ForEach(photos, id: \.id) { photo in
                                         AsyncImageWithAuth(url: URL(string: getFullURL(photo.url))) { image in image
                                                 .resizable()
+                                                .aspectRatio(contentMode: .fill)
                                         } placeholder: {
                                             Image("placeholder")
                                                 .resizable()
+                                                .aspectRatio(contentMode: .fill)
+
                                         }
-                                        .frame(width: 100, height: 100)
+                                        .frame(width: 130, height: 130)
+                                        .cornerRadius(5)
+                                        .padding(8)
                                         .onTapGesture {
                                             viewmodel.SelectedPhoto = photo
                                             viewmodel.isShowingDetail = true
@@ -44,16 +49,17 @@ struct ProfileImages: View {
                 }
             }
             .padding(.top)
-            .blur(radius: viewmodel.isShowingDetail ? 20 : 0)
+            
             
             if viewmodel.isLoading {
                 LoadingView()
             }
+            
             if viewmodel.isShowingDetail {
                 PhotoDetailView(isShowingDetail: $viewmodel.isShowingDetail, photo: viewmodel.SelectedPhoto!)
             }
         }
-        .border(Color.black, width: 1)
+        .border(Color.gray, width: 1)
         .task {
             do {
                 try await viewmodel.loadProfilePhotos()

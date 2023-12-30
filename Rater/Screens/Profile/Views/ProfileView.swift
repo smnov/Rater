@@ -18,28 +18,31 @@ struct ProfileView: View {
                     VStack {
                         if let profile = viewmodel.profile {
                             HStack(spacing: 10) {
-                                Text("Profile: \(profile.name)")
+                                Text("\(profile.name)")
                                     .fontWeight(.semibold)
-                                Spacer()
+                                    .font(.title2)
+                                    .multilineTextAlignment(.center)
                                 NavigationLink(destination: SettingsView()) {
                                     Image(systemName: "gearshape.fill")
                                         .renderingMode(.original)
                                         .frame(width: 16, height: 16)
                                         .foregroundColor(.black)
                                 }
+                                .multilineTextAlignment(.center)
                             }
                             .padding(20)
                             Spacer()
                             ProfileImages()
+                            UploadPhotoView()
                         }                       
                     }
                     
                         Spacer(minLength: 20)
-                        UploadPhotoView()
+                       
                     }
                 }
-                
-                
+            .blur(radius: viewmodel.isShowingDetail ? 20 : 0)
+
                 .task {
                     do {
                         try await viewmodel.loadProfile()

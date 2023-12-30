@@ -8,17 +8,49 @@
 import SwiftUI
 
 struct FAQView: View {
+    
+    private var faqData = FAQData()
+    @StateObject var viewmodel = FAQViewModel()
+    
     var body: some View {
-        ZStack {
-            RadialGradient(gradient: Gradient(colors: [.blue, .black]), center: .center, startRadius: 2, endRadius: 650)
-            VStack {
-                Text("FAQ View")
-                Text("How is this works?")
-        }
+        
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Toggle("Switch to Russian", isOn: $viewmodel.isRussianSelected)
+                        .padding()
+                    
+                    if viewmodel.isRussianSelected {
+                        ForEach(faqData.russianVersion, id: \.self) { faqItem in
+                            FAQItem(question: faqItem["question"]!, answer: faqItem["answer"]!)
+                        }
+                    } else {
+                        ForEach(faqData.englishVersion, id: \.self) { faqItem in
+                            FAQItem(question: faqItem["question"]!, answer: faqItem["answer"]!)
+                        }
+                        
+                    }
+                }
+                .navigationTitle("Rater FAQ")
+            }
         }
     }
-}
-
-#Preview {
-    FAQView()
+    
+    
+    struct FAQItem: View {
+        var question: String
+        var answer: String
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(question)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                
+                Text(answer)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
 }

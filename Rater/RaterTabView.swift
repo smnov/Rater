@@ -22,7 +22,7 @@ struct RaterTabView: View {
                 }
             FAQView()
                 .tabItem {
-                    Image(systemName: "person.circle")
+                    Image(systemName: "questionmark.circle.fill")
                     Text("FAQ")
                 }
         }
