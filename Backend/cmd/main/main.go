@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 	_ "net/http"
+	"github.com/smnov/Rater/Backend/cmd/server"
+	"github.com/smnov/Rater/Backend/cmd/storage"
 )
 
 
 func main() {
-	store, err := NewPostgresStore()
+	store, err := storage.NewPostgresStore()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -16,7 +18,7 @@ func main() {
 	if err := store.Init(); err != nil {
 		log.Fatal(err)
 	}
-	server := NewAPIServer(":8000", store)
+	server := server.NewAPIServer(":8000", store)
 	server.Run()
 	fmt.Println(server)
 }

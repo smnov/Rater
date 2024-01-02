@@ -1,5 +1,9 @@
-build:
-	go build -o bin/backend main.go
+BIN_DIR := bin
+MAIN_FILE := cmd/main/main.go
+OUTPUT := $(BIN_DIR)/backend
 
-run: build
-	go run main.go
+build:
+	@go build -o $(OUTPUT) $(MAIN_FILE)
+
+run:
+	@go run $(MAIN_FILE)
